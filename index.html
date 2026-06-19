@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda tu Cita</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Serif+Display:ital@0;1&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink:      #1A1A2E;
+    --slate:    #4A5568;
+    --mist:     #E8EDF5;
+    --fog:      #F4F6FA;
+    --white:    #FFFFFF;
+    --accent:   #2D6BE4;
+    --accent2:  #1A4DB8;
+    --zoom:     #0B5CFF;
+    --green:    #10B981;
+    --red:      #EF4444;
+    --border:   #D6DDE8;
+    --radius:   12px;
+    --shadow:   0 2px 12px rgba(26,26,46,0.08);
+    --shadow-lg:0 8px 32px rgba(26,26,46,0.14);
+  }
+
+  html { font-size: 16px; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--fog);
+    color: var(--ink);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.3rem;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+  .logo span { color: var(--accent); }
+  .header-actions { display: flex; gap: .75rem; align-items: center; }
+  .btn-admin {
+    font-family: 'DM Sans', sans-serif;
+    font-size: .8rem;
+    font-weight: 500;
+    padding: .4rem .9rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--white);
+    color: var(--slate);
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .btn-admin:hover { background: var(--mist); }
+
+  /* ── LAYOUT ── */
+  .page { max-width: 980px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+  .hero {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+  .hero-eyebrow {
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .6rem;
+  }
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+    line-height: 1.15;
+    color: var(--ink);
+    letter-spacing: -0.03em;
+    margin-bottom: .75rem;
+  }
+  .hero h1 em { font-style: italic; color: var(--accent); }
+  .hero p {
+    font-size: 1rem;
+    color: var(--slate);
+    max-width: 480px;
+    margin: 0 auto;
+    font-weight: 300;
+  }
+
+  /* ── BOOKING CARD ── */
+  .booking-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  @media (max-width: 680px) { .booking-grid { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1.75rem;
+  }
+  .card-title {
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--slate);
+    margin-bottom: 1.25rem;
+    padding-bottom: .75rem;
+    border-bottom: 1px solid var(--mist);
+  }
+
+  /* ── CALENDAR ── */
+  .cal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .cal-month {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--ink);
+    text-transform: capitalize;
+  }
+  .cal-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    width: 32px; height: 32px;
+    cursor: pointer;
+    font-size: 1rem;
+    color: var(--slate);
+    display: flex; align-items: center; justify-content: center;
+    transition: all .15s;
+  }
+  .cal-btn:hover { background: var(--mist); color: var(--ink); }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+    text-align: center;
+  }
+  .cal-dow {
+    font-size: .7rem;
+    font-weight: 600;
+    color: var(--slate);
+    padding: .35rem 0;
+    letter-spacing: .05em;
+  }
+  .cal-day {
+    aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px;
+    font-size: .85rem;
+    cursor: pointer;
+    transition: all .15s;
+    position: relative;
+    border: 1px solid transparent;
+  }
+  .cal-day.empty { cursor: default; }
+  .cal-day.past { color: #C4CAD4; cursor: not-allowed; }
+  .cal-day.available:hover { background: var(--mist); border-color: var(--accent); color: var(--accent); }
+  .cal-day.selected { background: var(--accent); color: var(--white); font-weight: 600; }
+  .cal-day.has-bookings::after {
+    content: '';
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+    position: absolute;
+    bottom: 4px; left: 50%; transform: translateX(-50%);
+  }
+  .cal-day.selected.has-bookings::after { background: rgba(255,255,255,.6); }
+  .cal-day.full { color: #C4CAD4; cursor: not-allowed; }
+  .cal-day.today { font-weight: 700; }
+  .cal-day.today:not(.selected) { border-color: var(--accent); color: var(--accent); }
+
+  /* ── SLOTS ── */
+  .slots-label {
+    font-size: .8rem;
+    font-weight: 500;
+    color: var(--slate);
+    margin-bottom: .75rem;
+  }
+  .slots-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: .5rem;
+    margin-bottom: 1.25rem;
+  }
+  .slot {
+    padding: .5rem .25rem;
+    text-align: center;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: .82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .15s;
+    color: var(--ink);
+  }
+  .slot:hover { border-color: var(--accent); color: var(--accent); background: #EEF3FC; }
+  .slot.selected { background: var(--accent); color: var(--white); border-color: var(--accent); }
+  .slot.booked { background: var(--fog); color: #C4CAD4; border-color: var(--mist); cursor: not-allowed; text-decoration: line-through; }
+
+  .no-date-msg {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--slate);
+    font-size: .9rem;
+    font-style: italic;
+  }
+
+  /* ── FORM ── */
+  .form-group { margin-bottom: 1rem; }
+  label {
+    display: block;
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--slate);
+    margin-bottom: .35rem;
+    letter-spacing: .03em;
+  }
+  input, select, textarea {
+    width: 100%;
+    padding: .6rem .85rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .9rem;
+    color: var(--ink);
+    background: var(--white);
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(45,107,228,.1);
+  }
+  textarea { resize: vertical; min-height: 72px; }
+
+  .summary-box {
+    background: var(--mist);
+    border-radius: 8px;
+    padding: .9rem 1rem;
+    margin-bottom: 1.25rem;
+    font-size: .85rem;
+    color: var(--slate);
+    display: none;
+  }
+  .summary-box.visible { display: block; }
+  .summary-box strong { color: var(--ink); display: block; font-size: .95rem; margin-bottom: .2rem; }
+
+  .btn-book {
+    width: 100%;
+    padding: .75rem;
+    background: var(--accent);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .18s, transform .1s;
+    letter-spacing: .01em;
+  }
+  .btn-book:hover { background: var(--accent2); }
+  .btn-book:active { transform: scale(.98); }
+  .btn-book:disabled { background: #A0AEC0; cursor: not-allowed; }
+
+  /* ── CONFIRMATION ── */
+  .confirmation {
+    display: none;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 2.5rem 2rem;
+    text-align: center;
+    grid-column: 1 / -1;
+  }
+  .confirmation.visible { display: block; }
+  .confirm-icon {
+    width: 64px; height: 64px;
+    background: #ECFDF5;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.25rem;
+    font-size: 1.75rem;
+  }
+  .confirmation h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.6rem;
+    margin-bottom: .5rem;
+    color: var(--ink);
+  }
+  .confirmation p { color: var(--slate); font-size: .95rem; margin-bottom: 1.5rem; }
+  .zoom-link-box {
+    background: #EEF3FC;
+    border: 1px solid #C3D5F5;
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin: 1.25rem auto;
+    max-width: 440px;
+  }
+  .zoom-label {
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--zoom);
+    margin-bottom: .5rem;
+    display: flex; align-items: center; justify-content: center; gap: .4rem;
+  }
+  .zoom-link {
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--zoom);
+    word-break: break-all;
+    display: block;
+    margin-bottom: .75rem;
+    text-decoration: none;
+  }
+  .zoom-link:hover { text-decoration: underline; }
+  .zoom-meeting-id {
+    font-size: .78rem;
+    color: var(--slate);
+    margin-bottom: .75rem;
+  }
+  .btn-copy {
+    font-family: 'DM Sans', sans-serif;
+    font-size: .8rem;
+    font-weight: 600;
+    padding: .4rem 1rem;
+    border-radius: 6px;
+    border: 1px solid var(--zoom);
+    background: var(--white);
+    color: var(--zoom);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-copy:hover { background: var(--zoom); color: var(--white); }
+
+  .detail-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+  .chip {
+    background: var(--mist);
+    border-radius: 20px;
+    padding: .3rem .85rem;
+    font-size: .82rem;
+    color: var(--slate);
+    font-weight: 500;
+  }
+
+  .btn-new {
+    font-family: 'DM Sans', sans-serif;
+    font-size: .88rem;
+    font-weight: 500;
+    padding: .55rem 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--white);
+    color: var(--slate);
+    cursor: pointer;
+    transition: all .15s;
+    margin-top: .5rem;
+  }
+  .btn-new:hover { background: var(--mist); }
+
+  /* ── ADMIN PANEL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(26,26,46,.45);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    width: 100%; max-width: 680px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 2rem;
+  }
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+  .modal-header h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
+  }
+  .btn-close {
+    background: none; border: none;
+    font-size: 1.3rem; cursor: pointer;
+    color: var(--slate); line-height: 1;
+    padding: .25rem;
+  }
+
+  .config-section { margin-bottom: 1.75rem; }
+  .config-section h3 {
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--slate);
+    margin-bottom: 1rem;
+    padding-bottom: .5rem;
+    border-bottom: 1px solid var(--mist);
+  }
+
+  .days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: .4rem;
+  }
+  .day-toggle {
+    padding: .5rem .25rem;
+    text-align: center;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: .75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+    color: var(--slate);
+    user-select: none;
+  }
+  .day-toggle.active { background: var(--accent); color: var(--white); border-color: var(--accent); }
+
+  .time-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .75rem;
+  }
+
+  .appointments-list { display: flex; flex-direction: column; gap: .6rem; }
+  .appt-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: .85rem;
+  }
+  .appt-info { flex: 1; }
+  .appt-name { font-weight: 600; color: var(--ink); }
+  .appt-time { color: var(--slate); font-size: .78rem; }
+  .appt-zoom { font-size: .72rem; color: var(--zoom); word-break: break-all; }
+  .btn-del {
+    background: none;
+    border: none;
+    color: var(--red);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: .25rem;
+    border-radius: 4px;
+    transition: background .15s;
+  }
+  .btn-del:hover { background: #FEF2F2; }
+  .empty-appts { color: var(--slate); font-size: .9rem; text-align: center; padding: 1rem; }
+
+  .btn-save {
+    width: 100%;
+    padding: .7rem;
+    background: var(--accent);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .18s;
+    margin-top: .25rem;
+  }
+  .btn-save:hover { background: var(--accent2); }
+
+  .zoom-config-note {
+    background: #EEF3FC;
+    border-left: 3px solid var(--zoom);
+    border-radius: 4px;
+    padding: .75rem 1rem;
+    font-size: .82rem;
+    color: var(--slate);
+    margin-bottom: 1rem;
+  }
+  .zoom-config-note strong { color: var(--zoom); }
+
+  .status-toast {
+    position: fixed;
+    bottom: 1.5rem; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--ink);
+    color: var(--white);
+    padding: .6rem 1.25rem;
+    border-radius: 8px;
+    font-size: .85rem;
+    font-weight: 500;
+    z-index: 999;
+    transition: transform .3s ease;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .status-toast.show { transform: translateX(-50%) translateY(0); }
+
+  .duration-chips { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .dur-chip {
+    padding: .35rem .85rem;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: .82rem;
+    cursor: pointer;
+    transition: all .15s;
+    color: var(--slate);
+    font-weight: 500;
+  }
+  .dur-chip.active { background: var(--accent); color: var(--white); border-color: var(--accent); }
+
+  .slot-interval-row { display: flex; gap: .5rem; align-items: center; }
+  .slot-interval-row input { max-width: 70px; }
+  .slot-interval-row span { font-size: .85rem; color: var(--slate); }
+
+  .tabs { display: flex; gap: 0; margin-bottom: 1.5rem; border-bottom: 2px solid var(--mist); }
+  .tab-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: .85rem; font-weight: 500;
+    padding: .6rem 1.25rem;
+    border: none; background: none;
+    cursor: pointer; color: var(--slate);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all .15s;
+  }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">agenda<span>.</span>pro</div>
+  <div class="header-actions">
+    <button class="btn-admin" onclick="openAdmin()">⚙ Configuración</button>
+  </div>
+</header>
+
+<div class="page">
+  <div class="hero">
+    <div class="hero-eyebrow">Reserva en línea</div>
+    <h1>Agenda tu cita<br><em>cuando mejor te convenga</em></h1>
+    <p>Selecciona el día y horario disponible. Al confirmar, recibirás tu enlace de Zoom de forma automática.</p>
+  </div>
+
+  <div class="booking-grid" id="bookingGrid">
+
+    <!-- CALENDAR -->
+    <div class="card">
+      <div class="card-title">Selecciona una fecha</div>
+      <div class="cal-nav">
+        <button class="cal-btn" onclick="changeMonth(-1)">‹</button>
+        <span class="cal-month" id="calMonth"></span>
+        <button class="cal-btn" onclick="changeMonth(1)">›</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+
+    <!-- SLOTS + FORM -->
+    <div class="card" id="rightCard">
+      <div id="slotsSection">
+        <div class="card-title">Horarios disponibles</div>
+        <div id="slotsContent">
+          <div class="no-date-msg">← Elige una fecha para ver los horarios</div>
+        </div>
+      </div>
+
+      <div id="formSection" style="display:none">
+        <div class="card-title">Tus datos</div>
+        <div id="summaryBox" class="summary-box"></div>
+
+        <div class="form-group">
+          <label>Nombre completo *</label>
+          <input type="text" id="fName" placeholder="Ej. María García">
+        </div>
+        <div class="form-group">
+          <label>Correo electrónico *</label>
+          <input type="email" id="fEmail" placeholder="correo@ejemplo.com">
+        </div>
+        <div class="form-group">
+          <label>Teléfono (opcional)</label>
+          <input type="tel" id="fPhone" placeholder="+52 55 1234 5678">
+        </div>
+        <div class="form-group">
+          <label>Motivo de la cita (opcional)</label>
+          <textarea id="fReason" placeholder="Describe brevemente el tema a tratar…"></textarea>
+        </div>
+        <button class="btn-book" id="btnBook" onclick="confirmBooking()">Confirmar y obtener enlace de Zoom</button>
+      </div>
+    </div>
+
+    <!-- CONFIRMATION -->
+    <div class="confirmation" id="confirmation">
+      <div class="confirm-icon">✅</div>
+      <h2>¡Cita confirmada!</h2>
+      <p>Tu sesión ha sido agendada. Guarda tu enlace de Zoom, lo necesitarás el día de tu cita.</p>
+
+      <div class="detail-chips" id="confirmChips"></div>
+
+      <div class="zoom-link-box">
+        <div class="zoom-label">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#0B5CFF"><path d="M15 10.5v3L19 17V7l-4 3.5zM5 7c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h9c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2H5z"/></svg>
+          Tu enlace de Zoom
+        </div>
+        <a class="zoom-link" id="confirmZoomLink" href="#" target="_blank"></a>
+        <div class="zoom-meeting-id" id="confirmMeetingId"></div>
+        <button class="btn-copy" onclick="copyLink()">Copiar enlace</button>
+      </div>
+
+      <button class="btn-new" onclick="resetBooking()">← Agendar otra cita</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ADMIN MODAL -->
+<div class="modal-overlay" id="adminModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Configuración</h2>
+      <button class="btn-close" onclick="closeAdmin()">✕</button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('zoom')">Zoom</button>
+      <button class="tab-btn" onclick="switchTab('schedule')">Disponibilidad</button>
+      <button class="tab-btn" onclick="switchTab('appointments')">Citas agendadas</button>
+    </div>
+
+    <!-- TAB: ZOOM -->
+    <div class="tab-panel active" id="tab-zoom">
+      <div class="config-section">
+        <h3>Credenciales de Zoom</h3>
+        <div class="zoom-config-note">
+          <strong>¿Cómo obtener tus credenciales?</strong><br>
+          1. Ve a <strong>marketplace.zoom.us</strong> → Develop → Build App<br>
+          2. Crea una app de tipo <strong>Server-to-Server OAuth</strong><br>
+          3. Copia Account ID, Client ID y Client Secret aquí.<br>
+          <em>Sin estas credenciales, se generará un enlace de demostración.</em>
+        </div>
+        <div class="form-group">
+          <label>Account ID</label>
+          <input type="text" id="cfgAccountId" placeholder="Tu Zoom Account ID">
+        </div>
+        <div class="form-group">
+          <label>Client ID</label>
+          <input type="text" id="cfgClientId" placeholder="Tu Zoom Client ID">
+        </div>
+        <div class="form-group">
+          <label>Client Secret</label>
+          <input type="password" id="cfgClientSecret" placeholder="Tu Zoom Client Secret">
+        </div>
+        <div class="form-group">
+          <label>Tu User ID de Zoom (email o ID)</label>
+          <input type="text" id="cfgZoomUser" placeholder="correo@ejemplo.com">
+        </div>
+      </div>
+      <button class="btn-save" onclick="saveConfig()">Guardar configuración</button>
+    </div>
+
+    <!-- TAB: SCHEDULE -->
+    <div class="tab-panel" id="tab-schedule">
+      <div class="config-section">
+        <h3>Días laborables</h3>
+        <div class="days-grid" id="daysGrid"></div>
+      </div>
+      <div class="config-section">
+        <h3>Horario de atención</h3>
+        <div class="time-row">
+          <div class="form-group">
+            <label>Hora inicio</label>
+            <input type="time" id="cfgStart" value="09:00">
+          </div>
+          <div class="form-group">
+            <label>Hora fin</label>
+            <input type="time" id="cfgEnd" value="18:00">
+          </div>
+        </div>
+      </div>
+      <div class="config-section">
+        <h3>Duración de cada cita</h3>
+        <div class="duration-chips" id="durationChips">
+          <div class="dur-chip" data-min="30" onclick="selectDuration(this)">30 min</div>
+          <div class="dur-chip" data-min="45" onclick="selectDuration(this)">45 min</div>
+          <div class="dur-chip active" data-min="60" onclick="selectDuration(this)">60 min</div>
+          <div class="dur-chip" data-min="90" onclick="selectDuration(this)">90 min</div>
+        </div>
+      </div>
+      <div class="config-section">
+        <h3>Descanso entre citas (minutos)</h3>
+        <div class="slot-interval-row">
+          <input type="number" id="cfgBuffer" value="15" min="0" max="60" style="max-width:80px">
+          <span>minutos de pausa</span>
+        </div>
+      </div>
+      <button class="btn-save" onclick="saveConfig()">Guardar disponibilidad</button>
+    </div>
+
+    <!-- TAB: APPOINTMENTS -->
+    <div class="tab-panel" id="tab-appointments">
+      <div class="config-section">
+        <h3>Próximas citas</h3>
+        <div class="appointments-list" id="appointmentsList"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="status-toast" id="toast"></div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────────────
+const DAYS_ES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+let state = {
+  year: new Date().getFullYear(),
+  month: new Date().getMonth(),
+  selectedDate: null,
+  selectedSlot: null,
+  appointments: [],
+  config: {
+    workDays: [1,2,3,4,5],
+    startTime: '09:00',
+    endTime: '18:00',
+    duration: 60,
+    buffer: 15,
+    zoom: { accountId:'', clientId:'', clientSecret:'', userId:'' }
+  }
+};
+
+// ── PERSISTENCE ─────────────────────────────────────────────────────────────
+function loadData() {
+  try {
+    const saved = localStorage.getItem('agenda_pro_data');
+    if (saved) {
+      const d = JSON.parse(saved);
+      if (d.appointments) state.appointments = d.appointments;
+      if (d.config) state.config = { ...state.config, ...d.config };
+    }
+  } catch(e) {}
+}
+
+function saveData() {
+  localStorage.setItem('agenda_pro_data', JSON.stringify({
+    appointments: state.appointments,
+    config: state.config
+  }));
+}
+
+// ── CALENDAR ────────────────────────────────────────────────────────────────
+function renderCalendar() {
+  const monthEl = document.getElementById('calMonth');
+  monthEl.textContent = `${MONTHS_ES[state.month]} ${state.year}`;
+
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+
+  DAYS_ES.forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'cal-dow';
+    el.textContent = d[0];
+    grid.appendChild(el);
+  });
+
+  const firstDay = new Date(state.year, state.month, 1).getDay();
+  const daysInMonth = new Date(state.year, state.month + 1, 0).getDate();
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  for (let i = 0; i < firstDay; i++) {
+    const el = document.createElement('div');
+    el.className = 'cal-day empty';
+    grid.appendChild(el);
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(state.year, state.month, d);
+    const el = document.createElement('div');
+    const dow = date.getDay();
+    const isToday = date.getTime() === today.getTime();
+    const isPast = date < today;
+    const isWorkDay = state.config.workDays.includes(dow);
+    const dateStr = formatDate(date);
+    const booked = getBookedSlots(dateStr);
+    const available = generateSlots(dateStr);
+    const isFull = available.length > 0 && booked.length >= available.length;
+
+    let cls = 'cal-day';
+    if (isPast || !isWorkDay) cls += ' past';
+    else if (isFull) cls += ' full';
+    else cls += ' available';
+    if (isToday) cls += ' today';
+    if (booked.length > 0) cls += ' has-bookings';
+    if (state.selectedDate === dateStr) cls += ' selected';
+
+    el.className = cls;
+    el.textContent = d;
+
+    if (!isPast && isWorkDay && !isFull) {
+      el.onclick = () => selectDate(dateStr);
+    }
+
+    grid.appendChild(el);
+  }
+}
+
+function changeMonth(dir) {
+  state.month += dir;
+  if (state.month > 11) { state.month = 0; state.year++; }
+  if (state.month < 0)  { state.month = 11; state.year--; }
+  renderCalendar();
+}
+
+// ── SLOTS ───────────────────────────────────────────────────────────────────
+function formatDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function generateSlots(dateStr) {
+  const { startTime, endTime, duration, buffer } = state.config;
+  const slots = [];
+  let [sh, sm] = startTime.split(':').map(Number);
+  const [eh, em] = endTime.split(':').map(Number);
+  const endMins = eh * 60 + em;
+  let cur = sh * 60 + sm;
+
+  while (cur + duration <= endMins) {
+    const hh = String(Math.floor(cur / 60)).padStart(2,'0');
+    const mm = String(cur % 60).padStart(2,'0');
+    slots.push(`${hh}:${mm}`);
+    cur += duration + buffer;
+  }
+  return slots;
+}
+
+function getBookedSlots(dateStr) {
+  return state.appointments
+    .filter(a => a.date === dateStr)
+    .map(a => a.time);
+}
+
+function selectDate(dateStr) {
+  state.selectedDate = dateStr;
+  state.selectedSlot = null;
+  renderCalendar();
+  renderSlots();
+  document.getElementById('formSection').style.display = 'none';
+  document.getElementById('slotsSection').style.display = 'block';
+}
+
+function renderSlots() {
+  const container = document.getElementById('slotsContent');
+  if (!state.selectedDate) {
+    container.innerHTML = '<div class="no-date-msg">← Elige una fecha para ver los horarios</div>';
+    return;
+  }
+
+  const slots = generateSlots(state.selectedDate);
+  const booked = getBookedSlots(state.selectedDate);
+
+  if (slots.length === 0) {
+    container.innerHTML = '<div class="no-date-msg">No hay horarios configurados.</div>';
+    return;
+  }
+
+  const [y, m, d] = state.selectedDate.split('-');
+  const dateLabel = new Date(+y, +m-1, +d).toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long' });
+
+  container.innerHTML = `
+    <div class="slots-label">📅 ${dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1)}</div>
+    <div class="slots-grid" id="slotsGrid"></div>
+  `;
+
+  const grid = document.getElementById('slotsGrid');
+  slots.forEach(slot => {
+    const el = document.createElement('div');
+    const isBooked = booked.includes(slot);
+    el.className = 'slot' + (isBooked ? ' booked' : '') + (state.selectedSlot === slot ? ' selected' : '');
+    el.textContent = slot;
+    if (!isBooked) el.onclick = () => selectSlot(slot, el);
+    grid.appendChild(el);
+  });
+}
+
+function selectSlot(slot, el) {
+  state.selectedSlot = slot;
+  document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+
+  const [y, m, d] = state.selectedDate.split('-');
+  const dateLabel = new Date(+y, +m-1, +d).toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long' });
+  const summaryBox = document.getElementById('summaryBox');
+  summaryBox.className = 'summary-box visible';
+  summaryBox.innerHTML = `<strong>📅 ${dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1)} · ${slot} hrs</strong>Duración: ${state.config.duration} minutos vía Zoom`;
+
+  document.getElementById('slotsSection').style.display = 'none';
+  document.getElementById('formSection').style.display = 'block';
+}
+
+// ── ZOOM API ─────────────────────────────────────────────────────────────────
+async function createZoomMeeting(name, date, time, duration) {
+  const { accountId, clientId, clientSecret, userId } = state.config.zoom;
+
+  if (!accountId || !clientId || !clientSecret || !userId) {
+    // Demo mode
+    const fakeId = Math.floor(Math.random() * 9000000000) + 1000000000;
+    const fakePwd = Math.random().toString(36).substr(2, 6);
+    return {
+      join_url: `https://zoom.us/j/${fakeId}?pwd=${fakePwd}`,
+      id: fakeId,
+      password: fakePwd,
+      demo: true
+    };
+  }
+
+  try {
+    // Step 1: Get OAuth token (Server-to-Server)
+    const tokenRes = await fetch('https://zoom.us/oauth/token?grant_type=account_credentials&account_id=' + accountId, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Basic ' + btoa(clientId + ':' + clientSecret),
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+    const tokenData = await tokenRes.json();
+    const token = tokenData.access_token;
+
+    // Step 2: Create meeting
+    const [y, m, d] = date.split('-');
+    const [hh, mm] = time.split(':');
+    const startTime = new Date(+y, +m-1, +d, +hh, +mm).toISOString();
+
+    const meetRes = await fetch(`https://api.zoom.us/v2/users/${userId}/meetings`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        topic: `Cita con ${name}`,
+        type: 2,
+        start_time: startTime,
+        duration: duration,
+        timezone: 'America/Mexico_City',
+        settings: {
+          join_before_host: false,
+          waiting_room: true,
+          auto_recording: 'none'
+        }
+      })
+    });
+    const meetData = await meetRes.json();
+    return { join_url: meetData.join_url, id: meetData.id, password: meetData.password, demo: false };
+  } catch(e) {
+    // Fallback
+    const fakeId = Math.floor(Math.random() * 9000000000) + 1000000000;
+    const fakePwd = Math.random().toString(36).substr(2, 6);
+    return { join_url: `https://zoom.us/j/${fakeId}?pwd=${fakePwd}`, id: fakeId, password: fakePwd, demo: true };
+  }
+}
+
+// ── BOOKING ──────────────────────────────────────────────────────────────────
+async function confirmBooking() {
+  const name = document.getElementById('fName').value.trim();
+  const email = document.getElementById('fEmail').value.trim();
+  const phone = document.getElementById('fPhone').value.trim();
+  const reason = document.getElementById('fReason').value.trim();
+
+  if (!name || !email) { showToast('Por favor completa nombre y correo.'); return; }
+  if (!state.selectedDate || !state.selectedSlot) { showToast('Selecciona fecha y horario.'); return; }
+
+  const btn = document.getElementById('btnBook');
+  btn.disabled = true;
+  btn.textContent = 'Creando tu enlace de Zoom…';
+
+  const zoomData = await createZoomMeeting(name, state.selectedDate, state.selectedSlot, state.config.duration);
+
+  const appt = {
+    id: Date.now(),
+    name, email, phone, reason,
+    date: state.selectedDate,
+    time: state.selectedSlot,
+    duration: state.config.duration,
+    zoom: zoomData
+  };
+  state.appointments.push(appt);
+  saveData();
+
+  showConfirmation(appt);
+}
+
+function showConfirmation(appt) {
+  document.getElementById('bookingGrid').querySelectorAll('.card').forEach(c => c.style.display = 'none');
+  const conf = document.getElementById('confirmation');
+  conf.classList.add('visible');
+
+  const [y, m, d] = appt.date.split('-');
+  const dateLabel = new Date(+y, +m-1, +d).toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+  document.getElementById('confirmChips').innerHTML = `
+    <div class="chip">📅 ${dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1)}</div>
+    <div class="chip">🕐 ${appt.time} hrs</div>
+    <div class="chip">⏱ ${appt.duration} min</div>
+    <div class="chip">👤 ${appt.name}</div>
+  `;
+
+  const linkEl = document.getElementById('confirmZoomLink');
+  linkEl.href = appt.zoom.join_url;
+  linkEl.textContent = appt.zoom.join_url;
+
+  document.getElementById('confirmMeetingId').innerHTML =
+    `ID de reunión: <strong>${appt.zoom.id}</strong>` +
+    (appt.zoom.password ? ` · Contraseña: <strong>${appt.zoom.password}</strong>` : '') +
+    (appt.zoom.demo ? '<br><em style="color:#EF4444">⚠ Enlace de demostración – configura tus credenciales de Zoom para enlaces reales.</em>' : '');
+}
+
+function copyLink() {
+  const link = document.getElementById('confirmZoomLink').href;
+  navigator.clipboard.writeText(link).then(() => showToast('¡Enlace copiado!'));
+}
+
+function resetBooking() {
+  state.selectedDate = null;
+  state.selectedSlot = null;
+  document.getElementById('confirmation').classList.remove('visible');
+  document.querySelectorAll('.card').forEach(c => c.style.display = 'block');
+  document.getElementById('formSection').style.display = 'none';
+  document.getElementById('slotsSection').style.display = 'block';
+  document.getElementById('fName').value = '';
+  document.getElementById('fEmail').value = '';
+  document.getElementById('fPhone').value = '';
+  document.getElementById('fReason').value = '';
+  document.getElementById('btnBook').disabled = false;
+  document.getElementById('btnBook').textContent = 'Confirmar y obtener enlace de Zoom';
+  renderCalendar();
+  renderSlots();
+}
+
+// ── ADMIN ───────────────────────────────────────────────────────────────────
+function openAdmin() {
+  loadAdminUI();
+  document.getElementById('adminModal').classList.add('open');
+}
+function closeAdmin() {
+  document.getElementById('adminModal').classList.remove('open');
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    const tabs = ['zoom','schedule','appointments'];
+    b.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  if (tab === 'appointments') renderAppointments();
+}
+
+function loadAdminUI() {
+  const { zoom, workDays, startTime, endTime, duration, buffer } = state.config;
+  document.getElementById('cfgAccountId').value = zoom.accountId || '';
+  document.getElementById('cfgClientId').value = zoom.clientId || '';
+  document.getElementById('cfgClientSecret').value = zoom.clientSecret || '';
+  document.getElementById('cfgZoomUser').value = zoom.userId || '';
+  document.getElementById('cfgStart').value = startTime;
+  document.getElementById('cfgEnd').value = endTime;
+  document.getElementById('cfgBuffer').value = buffer;
+
+  // Days
+  const daysGrid = document.getElementById('daysGrid');
+  daysGrid.innerHTML = '';
+  DAYS_ES.forEach((day, i) => {
+    const el = document.createElement('div');
+    el.className = 'day-toggle' + (workDays.includes(i) ? ' active' : '');
+    el.textContent = day;
+    el.onclick = () => {
+      el.classList.toggle('active');
+    };
+    daysGrid.appendChild(el);
+  });
+
+  // Duration
+  document.querySelectorAll('.dur-chip').forEach(c => {
+    c.classList.toggle('active', parseInt(c.dataset.min) === duration);
+  });
+}
+
+function selectDuration(el) {
+  document.querySelectorAll('.dur-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function saveConfig() {
+  const workDays = [];
+  document.querySelectorAll('#daysGrid .day-toggle').forEach((el, i) => {
+    if (el.classList.contains('active')) workDays.push(i);
+  });
+
+  const activeDur = document.querySelector('.dur-chip.active');
+
+  state.config = {
+    workDays: workDays.length ? workDays : state.config.workDays,
+    startTime: document.getElementById('cfgStart').value || state.config.startTime,
+    endTime: document.getElementById('cfgEnd').value || state.config.endTime,
+    duration: activeDur ? parseInt(activeDur.dataset.min) : state.config.duration,
+    buffer: parseInt(document.getElementById('cfgBuffer').value) || 0,
+    zoom: {
+      accountId: document.getElementById('cfgAccountId').value.trim(),
+      clientId: document.getElementById('cfgClientId').value.trim(),
+      clientSecret: document.getElementById('cfgClientSecret').value.trim(),
+      userId: document.getElementById('cfgZoomUser').value.trim()
+    }
+  };
+  saveData();
+  renderCalendar();
+  renderSlots();
+  showToast('✓ Configuración guardada');
+}
+
+function renderAppointments() {
+  const container = document.getElementById('appointmentsList');
+  const future = state.appointments
+    .filter(a => a.date >= formatDate(new Date()))
+    .sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
+
+  if (future.length === 0) {
+    container.innerHTML = '<div class="empty-appts">No hay citas próximas agendadas.</div>';
+    return;
+  }
+
+  container.innerHTML = future.map(appt => {
+    const [y, m, d] = appt.date.split('-');
+    const dateLabel = new Date(+y, +m-1, +d).toLocaleDateString('es-MX', { weekday:'short', day:'numeric', month:'short' });
+    return `
+    <div class="appt-item">
+      <div class="appt-info">
+        <div class="appt-name">${appt.name}</div>
+        <div class="appt-time">📅 ${dateLabel} · ${appt.time} hrs · ${appt.duration} min</div>
+        <div class="appt-time">✉ ${appt.email}${appt.phone ? ' · ' + appt.phone : ''}</div>
+        <div class="appt-zoom">🔗 ${appt.zoom.join_url}</div>
+        ${appt.reason ? `<div class="appt-time" style="margin-top:.2rem;font-style:italic">"${appt.reason}"</div>` : ''}
+      </div>
+      <button class="btn-del" onclick="deleteAppt(${appt.id})" title="Cancelar cita">🗑</button>
+    </div>`;
+  }).join('');
+}
+
+function deleteAppt(id) {
+  if (!confirm('¿Cancelar esta cita?')) return;
+  state.appointments = state.appointments.filter(a => a.id !== id);
+  saveData();
+  renderAppointments();
+  renderCalendar();
+  renderSlots();
+  showToast('Cita cancelada');
+}
+
+// ── TOAST ────────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+loadData();
+renderCalendar();
+renderSlots();
+</script>
+</body>
+</html>
